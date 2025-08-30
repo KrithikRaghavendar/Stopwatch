@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .stopwatch-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 400px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .time-display {
+            font-size: 4rem;
+            font-weight: 200;
+            margin: 40px 0;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 3px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            backdrop-filter: blur(10px);
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .stop-btn {
+            background: linear-gradient(45deg, #f44336, #da190b);
+            color: white;
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .stop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .milliseconds {
+            font-size: 0.6em;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 480px) {
+            .stopwatch-container {
+                min-width: 300px;
+                padding: 40px 20px;
+            }
+            
+            .time-display {
+                font-size: 2.5rem;
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                min-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stopwatch-container">
+        <h1>STOPWATCH</h1>
+        <div class="time-display" id="timeDisplay">
+            00:00:00<span class="milliseconds">.00</span>
+        </div>
+        <div class="controls">
+            <button class="start-btn" id="startBtn" onclick="startStopwatch()">START</button>
+            <button class="stop-btn" id="stopBtn" onclick="stopStopwatch()">STOP</button>
+            <button class="reset-btn" id="resetBtn" onclick="resetStopwatch()">RESET</button>
+        </div>
+    </div>
+
+    <script>
+        let startTime = 0;
+        let elapsedTime = 0;
+        let isRunning = false;
+        let intervalId = null;
+
+        function formatTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const ms = Math.floor((milliseconds % 1000) / 10);
+
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${Math.floor(seconds/60).toString().padStart(2, '0')}<span class="milliseconds">.${ms.toString().padStart(2, '0')}</span>`;
+        }
+
+        function updateDisplay() {
+            const currentTime = isRunning ? Date.now() - startTime + elapsedTime : elapsedTime;
+            const totalSeconds = Math.floor(currentTime / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const ms = Math.floor((currentTime % 1000) / 10);
+
+            let timeString;
+            if (hours > 0) {
+                timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}<span class="milliseconds">.${ms.toString().padStart(2, '0')}</span>`;
+            } else {
+                timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}<span class="milliseconds">.${ms.toString().padStart(2, '0')}</span>`;
+            }
+
+            document.getElementById('timeDisplay').innerHTML = timeString;
+        }
+
+        function startStopwatch() {
+            if (!isRunning) {
+                startTime = Date.now();
+                isRunning = true;
+                intervalId = setInterval(updateDisplay, 10);
+                
+                document.getElementById('startBtn').textContent = 'RUNNING';
+                document.getElementById('startBtn').style.opacity = '0.6';
+                document.getElementById('startBtn').style.cursor = 'not-allowed';
+            }
+        }
+
+        function stopStopwatch() {
+            if (isRunning) {
+                elapsedTime += Date.now() - startTime;
+                isRunning = false;
+                clearInterval(intervalId);
+                
+                document.getElementById('startBtn').textContent = 'RESUME';
+                document.getElementById('startBtn').style.opacity = '1';
+                document.getElementById('startBtn').style.cursor = 'pointer';
+            }
+        }
+
+        function resetStopwatch() {
+            isRunning = false;
+            elapsedTime = 0;
+            startTime = 0;
+            clearInterval(intervalId);
+            updateDisplay();
+            
+            document.getElementById('startBtn').textContent = 'START';
+            document.getElementById('startBtn').style.opacity = '1';
+            document.getElementById('startBtn').style.cursor = 'pointer';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            switch(event.code) {
+                case 'Space':
+                    event.preventDefault();
+                    if (isRunning) {
+                        stopStopwatch();
+                    } else {
+                        startStopwatch();
+                    }
+                    break;
+                case 'KeyR':
+                    resetStopwatch();
+                    break;
+            }
+        });
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
